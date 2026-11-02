@@ -130,11 +130,11 @@
                 <option value="final">5 — Final configuration</option>
               </select>
             </label>
-            <div class="stage-row" data-stage="existing"><div class="stage-num">1</div><div class="stage-body"><strong>Existing structure</strong><span>Survey geometry</span></div></div>
-            <div class="stage-row" data-stage="supports"><div class="stage-num">2</div><div class="stage-body"><strong>Temporary works</strong><span>Concept supports shown</span></div></div>
-            <div class="stage-row" data-stage="lifting"><div class="stage-num">3</div><div class="stage-body"><strong>Roof raised</strong><span>Open gap above original posts</span></div></div>
-            <div class="stage-row" data-stage="replace"><div class="stage-num">4</div><div class="stage-body"><strong>Post replacement</strong><span>Toggle posts individually</span></div></div>
-            <div class="stage-row" data-stage="final"><div class="stage-num">5</div><div class="stage-body"><strong>Finished structure</strong><span>All posts shown at roof level</span></div></div>
+            <button type="button" class="stage-row" data-stage="existing"><div class="stage-num">1</div><div class="stage-body"><strong>Existing structure</strong><span>Survey geometry</span></div></button>
+            <button type="button" class="stage-row" data-stage="supports"><div class="stage-num">2</div><div class="stage-body"><strong>Temporary works</strong><span>Concept supports shown</span></div></button>
+            <button type="button" class="stage-row" data-stage="lifting"><div class="stage-num">3</div><div class="stage-body"><strong>Roof raised</strong><span>Open gap above original posts</span></div></button>
+            <button type="button" class="stage-row" data-stage="replace"><div class="stage-num">4</div><div class="stage-body"><strong>Post replacement</strong><span>Toggle posts individually</span></div></button>
+            <button type="button" class="stage-row" data-stage="final"><div class="stage-num">5</div><div class="stage-body"><strong>Finished structure</strong><span>All posts shown at roof level</span></div></button>
           </div>
         </details>
         <details class="group" open>
@@ -191,7 +191,7 @@
         <div class="diagram-card"><strong>Shear-force diagram</strong><svg viewBox="0 0 300 114" id="shearDiagram" role="img" aria-label="Illustrative shear force along one span"></svg></div>
         <div class="diagram-card"><strong>Bending-moment diagram</strong><svg viewBox="0 0 300 114" id="momentDiagram" role="img" aria-label="Illustrative moment along one span"></svg></div>
         <div class="slim-note">Span <strong id="analysisSpan">3.00 m</strong> · Roof load <strong id="analysisArea">0.50 kPa</strong> · Tributary depth <strong id="analysisTrib">2.50 m</strong></div>
-        <div style="margin:12px 0"><label class="check-row"><input id="showStress2" type="checkbox" disabled> Bending colours available in Model → Appearance</label></div>
+        <p class="help">To view relative bending colours on the 3D front beam, open Model → Appearance &amp; display.</p>
         <p class="diagram-note">V(x) = q(L/2−x). M(x) = qx(L−x)/2. Elastic deflection = 5qL⁴/(384EI). The open C-section uses a rectangular web-and-flange approximation, ignoring torsion and local effects.</p>
         <div class="notice" style="margin-top:14px">Not included: actual load combinations, lateral-torsional buckling, moment continuity, bolts, centre splice capacity, foundations, jack reactions, temporary works, structural redistribution or code compliance.</div>
         <button class="ghost wide" id="exportSidebar" style="margin-top:14px">Export assumptions &amp; geometry</button>
