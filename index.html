@@ -28,9 +28,10 @@
 <small>Section shapes are visual approximations; connection plates, bolt patterns, material certification and exact C-channel radii still require field measurement.</small></section><section><h2>Post replacement</h2><label for="post">Select post</label><select id="post"><option value="-1">None</option><option value="0">Front 1</option><option value="1">Front 2</option><option value="2">Front 3</option><option value="3">Front 4</option><option value="4">Rear 1</option><option value="5">Rear 2</option><option value="6">Rear 3</option><option value="7">Rear 4</option></select><div class="metrics" style="margin:9px 0"><span class="metric">Replaced: <b id="count">0</b> / 8</span></div><button id="replace">Toggle selected post replaced</button></section>
 <section><div class="buttons"><button id="reset">Reset</button><button id="save">Save JSON</button></div></section>
 <small>Conceptual geometry, not engineering verification. All default dimensions are unverified placeholders. This model does not determine structural capacity, reactions, stability or safe lifting points.</small></aside></div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <script type="module">
-import * as THREE from 'https://esm.sh/three@0.170.0';
-import {OrbitControls} from 'https://esm.sh/three@0.170.0/examples/jsm/controls/OrbitControls.js';
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 const $=id=>document.getElementById(id),done=new Set();let camera,controls,renderer,scene,model;
 const host=$('canvas'),vp=$('viewport');
 try{
@@ -46,7 +47,7 @@ const grid=new THREE.GridHelper(24,24,0x9cb0bc,0xc1d0d9);grid.position.y=.002;sc
 model=new THREE.Group();scene.add(model);
 function boxBetween(a,b,w,d,m){let start=new THREE.Vector3(...a),end=new THREE.Vector3(...b),diff=end.clone().sub(start);let mesh=new THREE.Mesh(new THREE.BoxGeometry(w,diff.length(),d),m);mesh.position.copy(start).add(end).multiplyScalar(.5);mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),diff.normalize());model.add(mesh);return mesh}
 function box(x,y,z,w,h,d,m){let o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);model.add(o);return o}
-const mm=id=>Math.max(1,+$(id).value||1)/1000;const num=id=>+$ (id).value;const ht=(z,l)=>num('frontBase')+l+(num('rearBase')-num('frontBase'))*z/num('shedD');
+const mm=id=>Math.max(1,+$(id).value||1)/1000;const num=id=>+$(id).value;const ht=(z,l)=>num('frontBase')+l+(num('rearBase')-num('frontBase'))*z/num('shedD');
 function draw(){model.clear();let l=+$('lift').value/1000,sel=+$('post').value;$('liftLabel').textContent=Math.round(l*1000);$('frontLabel').textContent=(num('frontBase')+l).toFixed(2);$('rearLabel').textContent=(num('rearBase')+l).toFixed(2);$('count').textContent=done.size;
 for(let z of [0,num('shedD')]){let y=ht(z,l),w=num('shedW'),h=mm('cDepth'),f=mm('cFlange'),web=mm('cWeb'),lip=mm('cLip');for(let a of [0,num('splice')]){let b=a===0?num('splice'):w;if(b<=a||b>w)continue;let len=b-a,cx=(a+b)/2;box(cx,y,z,len,h,web,beam);box(cx,y+h/2-lip/2,z+f/2,len,lip,f,beam);box(cx,y-h/2+lip/2,z+f/2,len,lip,f,beam)}}
 for(let i=0;i<4;i++){let x=num('shedW')*i/3;boxBetween([x,ht(0,l)+.11,0],[x,ht(num('shedD'),l)+.11,num('shedD')],mm('rafterWidth'),mm('rafterDepth'),beam)}
@@ -64,5 +65,5 @@ $('reset').onclick=()=>{$('lift').value=0;$('concept').value='v';$('post').value
 $('measureExport').onclick=()=>{const ids=['shedW','shedD','frontBase','rearBase','postSize','postWall','cDepth','cFlange','cWeb','cLip','splice','rafterDepth','rafterWidth','braceSize','fy'];const values=Object.fromEntries(ids.map(id=>[id,+$(id).value]));const blob=new Blob([JSON.stringify({schema:'shed-cad-measurements-v1',units:'mm unless m explicitly in field name',values,verification:'Unverified field measurements; not engineering approval'},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='shed-measurements.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 $('save').onclick=()=>{let data={measurements:Object.fromEntries(['shedW','shedD','frontBase','rearBase','postSize','postWall','cDepth','cFlange','cWeb','cLip','splice','rafterDepth','rafterWidth','braceSize','fy'].map(id=>[id,+$(id).value])),lift_mm:+$('lift').value,concept:$('concept').value,selected_post:+$('post').value,replaced_posts:[...done]};let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='shed-lift-scenario.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
 (function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)})();view('iso');
-}catch(e){$('loading').textContent='Unable to load 3D engine. Check internet access and reload.';$('loading').className='error';console.error(e)}
+}catch(e){$('loading').textContent='3D engine failed to initialise. Reload the page or check browser network access.';$('loading').className='error';console.error(e)}
 </script></body></html>
