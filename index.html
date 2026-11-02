@@ -1,83 +1,248 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Shed Lift — 3D Concept Studio</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#111a24;color:#edf3f8;font:14px system-ui,-apple-system,sans-serif}header{padding:14px 18px;border-bottom:1px solid #344558}h1{font-size:20px;margin:0 0 4px}p{margin:5px 0;color:#acbfcd}.layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;min-height:calc(100dvh - 70px)}#viewport{position:relative;min-height:540px;background:#dfe8ef;touch-action:none}#canvas{position:absolute;inset:0}#hint{position:absolute;left:12px;top:12px;background:#172635d9;color:white;border-radius:8px;padding:9px;font-size:12px;pointer-events:none}#legend{position:absolute;left:12px;bottom:12px;background:#172635df;color:#eaf2f8;padding:9px;border-radius:8px;font-size:12px;pointer-events:none}.sw{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:4px}aside{padding:16px;background:#182634;border-left:1px solid #35495b;overflow:auto}section{border-bottom:1px solid #35485a;padding:0 0 14px;margin-bottom:14px}h2{font-size:14px;margin:0 0 10px}label{display:block;margin:12px 0 5px;color:#d6e4ed}input[type=range]{width:100%;accent-color:#62b7ec}select,button{width:100%;background:#283e51;color:white;border:1px solid #58738a;padding:10px;border-radius:8px;font:inherit}button{cursor:pointer}button:active{background:#41617a}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px}.buttons button{font-size:12px;padding:9px 5px}.check{display:flex;align-items:center;gap:8px;margin:9px 0}.check input{accent-color:#6fc4e6}.metrics{display:flex;gap:8px;flex-wrap:wrap}.metric{background:#283c4c;border-radius:7px;padding:7px 9px;font-size:12px}small{color:#b0c2cf;line-height:1.5;display:block}.error{color:#a12727;background:#fff3f0;padding:14px}#loading{position:absolute;top:45%;width:100%;text-align:center;color:#25394c} @media(max-width:780px){.layout{display:block}#viewport{height:55dvh;min-height:350px}aside{border-left:0}.buttons{grid-template-columns:repeat(4,1fr)}}
-</style></head><body><header><h1>Shed Lift — 3D Concept Studio</h1><p>9 m × 5 m skillion roof · 8 posts · 3 m front bays · 1 m proposed lift</p></header>
-<div class="layout"><div id="viewport"><div id="canvas"></div><div id="loading">Loading 3D model…</div><div id="hint">Drag to orbit · Pinch / scroll to zoom · Two-finger drag to pan</div><div id="legend"><span class="sw" style="background:#657987"></span>Existing steel &nbsp; <span class="sw" style="background:#478aab"></span>Roof steel &nbsp; <span class="sw" style="background:#e49b3f"></span>Temporary bracing &nbsp; <span class="sw" style="background:#2fa278"></span>Replaced posts</div></div>
-<aside><section><h2>Camera</h2><div class="buttons"><button data-view="iso">3D</button><button data-view="front">Front</button><button data-view="side">Side</button><button data-view="top">Plan</button></div></section>
-<section><h2>Roof position</h2><div class="metrics"><span class="metric">Lift <b id="liftLabel">0</b> mm</span><span class="metric">Front <b id="frontLabel">2.00</b> m</span><span class="metric">Rear <b id="rearLabel">2.45</b> m</span></div><label for="lift">Lift height</label><input id="lift" type="range" min="0" max="1000" step="25" value="0"></section>
-<section><h2>Temporary frame concepts</h2><select id="concept"><option value="v">Front and rear V-frames</option><option value="portal">Front-to-back portals</option><option value="cross">Cross-braced bays</option><option value="grid">Independent support grid</option></select><label class="check"><input type="checkbox" id="brace" checked> Show temporary frame</label><label class="check"><input type="checkbox" id="roof" checked> Show roof sheeting</label><label class="check"><input type="checkbox" id="supports" checked> Show local support</label></section>
-<section><h2>Measured geometry & steel sections</h2><small>Defaults are placeholders until measured. Dimensions in millimetres unless noted.</small>
-<label>Shed width (m)</label><input id="shedW" type="number" value="9" min="1" step=".1">
-<label>Shed depth (m)</label><input id="shedD" type="number" value="5" min="1" step=".1">
-<label>Front existing height (m)</label><input id="frontBase" type="number" value="2" min=".5" step=".05">
-<label>Rear existing height (m)</label><input id="rearBase" type="number" value="2.45" min=".5" step=".05">
-<label>Post square width</label><input id="postSize" type="number" value="150" min="30" step="5">
-<label>Post wall thickness</label><input id="postWall" type="number" value="5" min="1" step=".5">
-<label>Front beam C-channel depth</label><input id="cDepth" type="number" value="180" min="50" step="5">
-<label>Front beam flange width</label><input id="cFlange" type="number" value="65" min="20" step="5">
-<label>Front beam web thickness</label><input id="cWeb" type="number" value="6" min="1" step=".5">
-<label>Front beam flange thickness</label><input id="cLip" type="number" value="8" min="1" step=".5">
-<label>Centre splice location (m from left)</label><input id="splice" type="number" value="4.5" min=".1" step=".1">
-<label>Rafter depth</label><input id="rafterDepth" type="number" value="140" min="30" step="5">
-<label>Rafter width</label><input id="rafterWidth" type="number" value="65" min="20" step="5">
-<label>Brace width</label><input id="braceSize" type="number" value="65" min="20" step="5">
-<label>Steel grade (MPa nominal yield)</label><input id="fy" type="number" value="250" min="100" step="10">
-<button id="measureExport">Export measurement schedule JSON</button>
-<small>Section shapes are visual approximations; connection plates, bolt patterns, material certification and exact C-channel radii still require field measurement.</small></section><section><h2>Load & internal-force explorer</h2><small>Simply supported, isolated 3 m beam segment. Illustrative elastic calculation only; not a shed lifting analysis.</small>
-<label>Roof vertical area load (kPa)</label><input id="areaLoad" type="number" min="0" step=".1" value=".5">
-<label>Tributary roof depth to front beam (m)</label><input id="tributary" type="number" min=".1" step=".1" value="2.5">
-<label>Steel elastic modulus (GPa)</label><input id="modulus" type="number" min="1" step="1" value="200">
-<div class="metrics" style="margin:10px 0"><span class="metric">Line load <b id="lineLoad">—</b></span><span class="metric">End reaction <b id="reaction">—</b></span><span class="metric">Max shear <b id="shearMax">—</b></span><span class="metric">Max moment <b id="momentMax">—</b></span><span class="metric">Max deflection <b id="deflectMax">—</b></span></div>
-<label>Shear-force diagram (kN)</label><svg id="shearDiagram" viewBox="0 0 300 100" style="width:100%;background:#edf3f8;border-radius:6px"></svg>
-<label>Bending-moment diagram (kNm)</label><svg id="momentDiagram" viewBox="0 0 300 100" style="width:100%;background:#edf3f8;border-radius:6px"></svg>
-<small>For this idealised beam: V(x)=w(L/2−x), M(x)=wx(L−x)/2. Deflection assumes a simple rectangular approximation of the C-section's second moment of area, without local buckling, torsion or connection flexibility.</small></section>
-<section><h2>Jack positions — visual placeholders</h2><label class="check"><input id="showJacks" type="checkbox"> Show jack markers (not approved lifting points)</label>
-<label>Jack A along front width (m)</label><input id="jackA" type="number" min="0" max="9" step=".1" value="2.25">
-<label>Jack B along front width (m)</label><input id="jackB" type="number" min="0" max="9" step=".1" value="6.75">
-<label>Nominal jack rating (tonnes each)</label><input id="jackRating" type="number" min=".1" step=".5" value="20">
-<small>Markers show only the entered positions. The tool does not calculate jack reactions, verify the supporting ground, or determine safe lifting locations. Rating is recorded, not checked against a calculated demand.</small></section><section><h2>Post replacement</h2><label for="post">Select post</label><select id="post"><option value="-1">None</option><option value="0">Front 1</option><option value="1">Front 2</option><option value="2">Front 3</option><option value="3">Front 4</option><option value="4">Rear 1</option><option value="5">Rear 2</option><option value="6">Rear 3</option><option value="7">Rear 4</option></select><div class="metrics" style="margin:9px 0"><span class="metric">Replaced: <b id="count">0</b> / 8</span></div><button id="replace">Toggle selected post replaced</button></section>
-<section><div class="buttons"><button id="reset">Reset</button><button id="save">Save JSON</button></div></section>
-<small>Conceptual geometry, not engineering verification. All default dimensions are unverified placeholders. This model does not determine structural capacity, reactions, stability or safe lifting points.</small></aside></div>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f8fb">
+<title>Shed Studio — 3D CAD &amp; load explorer</title>
+<link rel="stylesheet" href="./app.css?v=3">
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
-<script type="module">
-import * as THREE from 'three';
-import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
-const $=id=>document.getElementById(id),done=new Set();let camera,controls,renderer,scene,model;
-const host=$('canvas'),vp=$('viewport');
-try{
-scene=new THREE.Scene();scene.background=new THREE.Color(0xdfe8ef);
-camera=new THREE.PerspectiveCamera(45,1,.05,150);camera.position.set(13,-17,11);
-renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;host.appendChild(renderer.domElement);
-controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.08;controls.target.set(4.5,2.5,1.5);controls.minDistance=3;controls.maxDistance=50;controls.maxPolarAngle=Math.PI*.96;
-scene.add(new THREE.HemisphereLight(0xffffff,0x8192a3,2.5));let sun=new THREE.DirectionalLight(0xffffff,2.2);sun.position.set(-6,-9,15);scene.add(sun);
-const mat=(color,opacity=1)=>new THREE.MeshStandardMaterial({color,metalness:.38,roughness:.56,transparent:opacity<1,opacity,side:THREE.DoubleSide});
-const steel=mat(0x657987),newsteel=mat(0x2fa278),beam=mat(0x478aab),brace=mat(0xe49b3f),temp=mat(0xb7844b),sheet=mat(0x91b7ca,.27),ground=mat(0xd1dedb);
-const floor=new THREE.Mesh(new THREE.PlaneGeometry(35,35),ground);floor.rotation.x=-Math.PI/2;floor.position.y=-.045;scene.add(floor);
-const grid=new THREE.GridHelper(24,24,0x9cb0bc,0xc1d0d9);grid.position.y=.002;scene.add(grid);
-model=new THREE.Group();scene.add(model);
-function boxBetween(a,b,w,d,m){let start=new THREE.Vector3(...a),end=new THREE.Vector3(...b),diff=end.clone().sub(start);let mesh=new THREE.Mesh(new THREE.BoxGeometry(w,diff.length(),d),m);mesh.position.copy(start).add(end).multiplyScalar(.5);mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),diff.normalize());model.add(mesh);return mesh}
-function box(x,y,z,w,h,d,m){let o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);model.add(o);return o}
-const mm=id=>Math.max(1,+$(id).value||1)/1000;const num=id=>+$(id).value;const ht=(z,l)=>num('frontBase')+l+(num('rearBase')-num('frontBase'))*z/num('shedD');
-function draw(){analysis();model.clear();let l=+$('lift').value/1000,sel=+$('post').value;$('liftLabel').textContent=Math.round(l*1000);$('frontLabel').textContent=(num('frontBase')+l).toFixed(2);$('rearLabel').textContent=(num('rearBase')+l).toFixed(2);$('count').textContent=done.size;
-for(let z of [0,num('shedD')]){let y=ht(z,l),w=num('shedW'),h=mm('cDepth'),f=mm('cFlange'),web=mm('cWeb'),lip=mm('cLip');for(let a of [0,num('splice')]){let b=a===0?num('splice'):w;if(b<=a||b>w)continue;let len=b-a,cx=(a+b)/2;box(cx,y,z,len,h,web,beam);box(cx,y+h/2-lip/2,z+f/2,len,lip,f,beam);box(cx,y-h/2+lip/2,z+f/2,len,lip,f,beam)}}
-for(let i=0;i<4;i++){let x=num('shedW')*i/3;boxBetween([x,ht(0,l)+.11,0],[x,ht(num('shedD'),l)+.11,num('shedD')],mm('rafterWidth'),mm('rafterDepth'),beam)}
-if($('roof').checked){let shape=new THREE.BufferGeometry();let points=new Float32Array([0,ht(0,l)+.22,0,num('shedW'),ht(0,l)+.22,0,num('shedW'),ht(num('shedD'),l)+.22,num('shedD'),0,ht(0,l)+.22,0,num('shedW'),ht(num('shedD'),l)+.22,num('shedD'),0,ht(num('shedD'),l)+.22,num('shedD')]);shape.setAttribute('position',new THREE.BufferAttribute(points,3));shape.computeVertexNormals();model.add(new THREE.Mesh(shape,sheet))}
-for(let j=0;j<2;j++)for(let i=0;i<4;i++){let n=j*4+i,x=i*num('shedW')/3,z=j*num('shedD'),selected=sel===n&&!done.has(n),h=selected?(j?num('rearBase'):num('frontBase')):ht(z,l);box(x,h/2,z,mm('postSize'),h,mm('postSize'),done.has(n)?newsteel:steel);if(selected&&$('supports').checked)box(x+.38,ht(z,l)/2,z+.25,.11,ht(z,l),.11,temp);box(x,.035,z,.28,.07,.28,steel)}
-if($('showJacks').checked){for(let id of ['jackA','jackB']){let x=Math.max(0,Math.min(num('shedW'),num(id)));box(x,.28,-.35,.24,.56,.24,temp);box(x,.58,-.35,.34,.05,.34,brace)}}
-if($('brace').checked){let c=$('concept').value;if(c==='v'){for(let z of [0,5]){let h=ht(z,l);boxBetween([0,h,z],[3.5,1.1+l,z],.065,.065,brace);boxBetween([9,h,z],[5.5,1.1+l,z],.065,.065,brace);boxBetween([3.5,1.1+l,z],[5.5,1.1+l,z],.065,.065,brace);boxBetween([4.5,0,z],[4.5,1.1+l,z],.08,.08,temp)}}else if(c==='portal'){for(let x of [1.5,4.5,7.5]){boxBetween([x,0,0],[x,ht(0,l),0],.08,.08,temp);boxBetween([x,0,5],[x,ht(5,l),5],.08,.08,temp);boxBetween([x,ht(0,l),0],[x,ht(5,l),5],.065,.065,brace)}}else if(c==='cross'){for(let z of [0,5])for(let i=0;i<3;i++){boxBetween([i*3,0,z],[(i+1)*3,ht(z,l),z],.045,.045,brace);boxBetween([(i+1)*3,0,z],[i*3,ht(z,l),z],.045,.045,brace)}}else for(let x of [1.5,4.5,7.5])for(let z of [0,5])boxBetween([x,0,z],[x,ht(z,l),z],.1,.1,temp)}
-}
-function analysis(){let w=Math.max(0,num('areaLoad'))*Math.max(0,num('tributary')),L=num('shedW')/3,R=w*L/2,M=w*L*L/8;const h=mm('cDepth'),f=mm('cFlange'),tw=mm('cWeb'),tf=mm('cLip'),E=Math.max(1,num('modulus'))*1e9;let I=(tw*Math.pow(h,3)+(f-tw)*2*(Math.pow(h,3)-Math.pow(Math.max(0,h-2*tf),3)))/12;let delta=I>0?5*(w*1000)*Math.pow(L,4)/(384*E*I)*1000:NaN;const fmt=(n,d=2)=>Number.isFinite(n)?n.toFixed(d):'—';$('lineLoad').textContent=fmt(w)+' kN/m';$('reaction').textContent=fmt(R)+' kN';$('shearMax').textContent=fmt(R)+' kN';$('momentMax').textContent=fmt(M)+' kNm';$('deflectMax').textContent=fmt(delta)+' mm';const svg=(id,fn,max,color)=>{let path=[];for(let i=0;i<=60;i++){let x=i/60,y=fn(x);path.push((i?'L':'M')+(20+260*x).toFixed(2)+' '+(50-38*y/Math.max(.0001,max)).toFixed(2))}$(id).innerHTML='<line x1="20" y1="50" x2="280" y2="50" stroke="#7b8d99"/><path d="'+path.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="2.5"/><text x="20" y="90" font-size="10" fill="#344">0 m</text><text x="245" y="90" font-size="10" fill="#344">'+fmt(L)+' m</text>'};svg('shearDiagram',t=>R-w*L*t,Math.max(R,.001),'#ca6b3b');svg('momentDiagram',t=>w*L*L*t*(1-t)/2,Math.max(M,.001),'#2678a8')}
-function resize(){let w=vp.clientWidth,h=vp.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}
-new ResizeObserver(resize).observe(vp);resize();draw();$('loading').remove();
-function view(name){let target=new THREE.Vector3(4.5,1.6,2.5);controls.target.copy(target);let off={iso:[12,-14,9],front:[0,-17,1.5],side:[17,0,1.5],top:[.01,0,19]}[name];camera.position.set(target.x+off[0],target.y+off[2],target.z+off[1]);controls.update()}
-for(let b of document.querySelectorAll('[data-view]'))b.onclick=()=>view(b.dataset.view);
-for(let id of ['lift','concept','post','brace','roof','supports','shedW','shedD','frontBase','rearBase','postSize','postWall','cDepth','cFlange','cWeb','cLip','splice','rafterDepth','rafterWidth','braceSize','fy'])$(id).addEventListener('input',draw);
-$('replace').onclick=()=>{let n=+$('post').value;if(n<0)return;done.has(n)?done.delete(n):done.add(n);draw()};
-$('reset').onclick=()=>{$('lift').value=0;$('concept').value='v';$('post').value=-1;done.clear();draw();view('iso')};
-$('measureExport').onclick=()=>{const ids=['shedW','shedD','frontBase','rearBase','postSize','postWall','cDepth','cFlange','cWeb','cLip','splice','rafterDepth','rafterWidth','braceSize','fy'];const values=Object.fromEntries(ids.map(id=>[id,+$(id).value]));const blob=new Blob([JSON.stringify({schema:'shed-cad-measurements-v1',units:'mm unless m explicitly in field name',values,verification:'Unverified field measurements; not engineering approval'},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='shed-measurements.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
-$('save').onclick=()=>{let data={analysis_inputs:{area_load_kPa:num('areaLoad'),tributary_m:num('tributary'),modulus_GPa:num('modulus'),jack_positions_m:[num('jackA'),num('jackB')],jack_rating_t:num('jackRating'),jack_reactions:'NOT CALCULATED',engineering_status:'UNVERIFIED'},measurements:Object.fromEntries(['shedW','shedD','frontBase','rearBase','postSize','postWall','cDepth','cFlange','cWeb','cLip','splice','rafterDepth','rafterWidth','braceSize','fy'].map(id=>[id,+$(id).value])),lift_mm:+$('lift').value,concept:$('concept').value,selected_post:+$('post').value,replaced_posts:[...done]};let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='shed-lift-scenario.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)};
-(function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera)})();view('iso');
-}catch(e){$('loading').textContent='3D engine failed to initialise. Reload the page or check browser network access.';$('loading').className='error';console.error(e)}
-</script></body></html>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><div class="brandmark" aria-hidden="true">⌗</div><div><div class="brand-title">Shed Studio</div><div class="brand-sub">3D CAD &amp; structural concept workspace</div></div></div>
+  <div class="top-divider"></div>
+  <div><div class="project-name">Skillion shed — lifting study</div><div class="brand-sub" id="projectDimensions">9.00 m × 5.00 m</div></div>
+  <div class="top-spacer"></div>
+  <div class="status" title="Not engineered or verified"><span class="status-dot"></span> Unverified model</div>
+  <div class="buttons top-actions">
+    <button class="ghost" type="button" id="importButton">Import</button>
+    <button class="primary" type="button" id="exportButton">Export model ↗</button>
+    <button class="icon-button" type="button" id="inspectorToggle" aria-label="Toggle inspector">Inspect</button>
+  </div>
+  <input id="fileInput" type="file" accept=".json,application/json" class="hidden">
+</header>
+<div class="workspace">
+  <aside class="left-panel" aria-label="Model controls">
+    <nav class="left-tabs" aria-label="Editor mode">
+      <button class="tab" data-tab="model" aria-selected="true">Model</button>
+      <button class="tab" data-tab="loads" aria-selected="false">Loads</button>
+      <button class="tab" data-tab="lift" aria-selected="false">Lift</button>
+      <button class="tab" data-tab="results" aria-selected="false">Results</button>
+    </nav>
+    <div class="panel-content">
+      <div data-panel="model">
+        <div class="section-label">Parametric geometry</div>
+        <p class="help" style="margin-top:0">Enter measured values here. The model updates as you edit.</p>
+        <details class="group" open>
+          <summary>Overall dimensions</summary>
+          <div class="group-body">
+            <div class="field-pair">
+              <label class="field"><span>Width</span><div class="unit-wrap"><input id="shedW" data-field="shedW" type="number" min="1" max="30" step=".1"><em>m</em></div></label>
+              <label class="field"><span>Depth</span><div class="unit-wrap"><input id="shedD" data-field="shedD" type="number" min="1" max="20" step=".1"><em>m</em></div></label>
+              <label class="field"><span>Front eave</span><div class="unit-wrap"><input id="frontBase" data-field="frontBase" type="number" min=".5" step=".05"><em>m</em></div></label>
+              <label class="field"><span>Rear eave</span><div class="unit-wrap"><input id="rearBase" data-field="rearBase" type="number" min=".5" step=".05"><em>m</em></div></label>
+            </div>
+            <div class="slim-note">4 front posts + 4 rear posts. Three equally spaced bays across the width.</div>
+          </div>
+        </details>
+        <details class="group" open>
+          <summary>Front C-channel</summary>
+          <div class="group-body">
+            <div class="field-pair">
+              <label class="field"><span>Overall depth</span><div class="unit-wrap"><input id="cDepth" data-field="cDepth" type="number" min="50" step="5"><em>mm</em></div></label>
+              <label class="field"><span>Flange width</span><div class="unit-wrap"><input id="cFlange" data-field="cFlange" type="number" min="20" step="5"><em>mm</em></div></label>
+              <label class="field"><span>Web thickness</span><div class="unit-wrap"><input id="cWeb" data-field="cWeb" type="number" min="1" step=".5"><em>mm</em></div></label>
+              <label class="field"><span>Flange thickness</span><div class="unit-wrap"><input id="cLip" data-field="cLip" type="number" min="1" step=".5"><em>mm</em></div></label>
+            </div>
+            <p class="help">Modelled as an open C-section with distinct web and flanges. Profile dimensions are placeholders until measured.</p>
+          </div>
+        </details>
+        <details class="group">
+          <summary>Posts &amp; rafters</summary>
+          <div class="group-body">
+            <div class="field-pair">
+              <label class="field"><span>Post SHS width</span><div class="unit-wrap"><input id="postSize" data-field="postSize" type="number" min="30" step="5"><em>mm</em></div></label>
+              <label class="field"><span>Post wall</span><div class="unit-wrap"><input id="postWall" data-field="postWall" type="number" min="1" step=".5"><em>mm</em></div></label>
+              <label class="field"><span>Rafter depth</span><div class="unit-wrap"><input id="rafterDepth" data-field="rafterDepth" type="number" min="30" step="5"><em>mm</em></div></label>
+              <label class="field"><span>Rafter width</span><div class="unit-wrap"><input id="rafterWidth" data-field="rafterWidth" type="number" min="20" step="5"><em>mm</em></div></label>
+            </div>
+          </div>
+        </details>
+        <details class="group">
+          <summary>Centre splice connection</summary>
+          <div class="group-body">
+            <label class="field"><span>Splice position from left</span><div class="unit-wrap"><input id="splice" data-field="splice" type="number" min=".1" step=".1"><em>m</em></div></label>
+            <div class="field-pair">
+              <label class="field"><span>Plate length</span><div class="unit-wrap"><input id="plateLength" data-field="plateLength" type="number" min="100" step="10"><em>mm</em></div></label>
+              <label class="field"><span>Plate thickness</span><div class="unit-wrap"><input id="plateThickness" data-field="plateThickness" type="number" min="2" step="1"><em>mm</em></div></label>
+              <label class="field"><span>Bolt count</span><input id="boltCount" data-field="boltCount" type="number" min="2" max="24" step="1"></label>
+            </div>
+            <div class="warning-note">Bolt positions, plate configuration and connection strength are not verified. Visual placeholders only.</div>
+          </div>
+        </details>
+        <details class="group">
+          <summary>Appearance &amp; display</summary>
+          <div class="group-body">
+            <label class="check-row"><input id="showRoof" data-field="showRoof" type="checkbox"> Show roof sheeting</label>
+            <label class="check-row"><input id="showStress" data-field="showStress" type="checkbox"> Relative beam bending colours</label>
+            <p class="help">Colours are normalised within each idealised span, not a pass/fail capacity check.</p>
+          </div>
+        </details>
+        <button class="ghost wide" type="button" id="resetButton">Reset model to defaults</button>
+      </div>
+      <div data-panel="loads" class="hidden">
+        <div class="section-label">Loads &amp; material assumptions</div>
+        <div class="warning-note">This is an <strong>isolated 3 m simple-beam example</strong>, not a structural assessment of the complete roof, supports or lifting stages.</div>
+        <details class="group" open>
+          <summary>Roof loading</summary>
+          <div class="group-body">
+            <label class="field"><span>Uniform area load</span><div class="unit-wrap"><input id="areaLoad" data-field="areaLoad" type="number" min="0" step=".05"><em>kPa</em></div></label>
+            <label class="field"><span>Tributary depth to front beam</span><div class="unit-wrap"><input id="tributary" data-field="tributary" type="number" min=".1" step=".1"><em>m</em></div></label>
+            <p class="help">Line load = roof area load × tributary depth. Values are assumptions for exploration, not established design loads.</p>
+          </div>
+        </details>
+        <details class="group" open>
+          <summary>Steel assumptions</summary>
+          <div class="group-body">
+            <div class="field-pair">
+              <label class="field"><span>Elastic modulus</span><div class="unit-wrap"><input id="modulus" data-field="modulus" type="number" min="1" step="5"><em>GPa</em></div></label>
+              <label class="field"><span>Nominal yield</span><div class="unit-wrap"><input id="fy" data-field="fy" type="number" min="100" step="10"><em>MPa</em></div></label>
+            </div>
+            <p class="help">Nominal yield is recorded for engineering handover; no capacity or code-compliance verification is calculated.</p>
+          </div>
+        </details>
+        <button class="primary wide" type="button" id="showResultsButton">View beam diagrams →</button>
+      </div>
+      <div data-panel="lift" class="hidden">
+        <div class="section-label">Staged lifting concept</div>
+        <div class="warning-note">Jack markers and temporary framing are editable <strong>visualisation inputs</strong>, not safe lifting-point recommendations or calculated support reactions.</div>
+        <details class="group" open>
+          <summary>Construction stage</summary>
+          <div class="group-body">
+            <label class="field"><span>Active stage</span>
+              <select id="stage" data-field="stage">
+                <option value="existing">1 — Existing structure</option>
+                <option value="supports">2 — Temporary supports</option>
+                <option value="lifting">3 — Roof raised</option>
+                <option value="replace">4 — Post replacement</option>
+                <option value="final">5 — Final configuration</option>
+              </select>
+            </label>
+            <div class="stage-row" data-stage="existing"><div class="stage-num">1</div><div class="stage-body"><strong>Existing structure</strong><span>Survey geometry</span></div></div>
+            <div class="stage-row" data-stage="supports"><div class="stage-num">2</div><div class="stage-body"><strong>Temporary works</strong><span>Concept supports shown</span></div></div>
+            <div class="stage-row" data-stage="lifting"><div class="stage-num">3</div><div class="stage-body"><strong>Roof raised</strong><span>Open gap above original posts</span></div></div>
+            <div class="stage-row" data-stage="replace"><div class="stage-num">4</div><div class="stage-body"><strong>Post replacement</strong><span>Toggle posts individually</span></div></div>
+            <div class="stage-row" data-stage="final"><div class="stage-num">5</div><div class="stage-body"><strong>Finished structure</strong><span>All posts shown at roof level</span></div></div>
+          </div>
+        </details>
+        <details class="group" open>
+          <summary>Roof elevation</summary>
+          <div class="group-body">
+            <div class="field-top"><span>Target roof lift</span><strong id="liftReadout">0 mm</strong></div>
+            <input id="lift" data-field="lift" type="range" min="0" max="1000" step="25">
+            <div class="field-pair" style="margin-top:8px"><div class="fine">0 mm</div><div class="fine" style="text-align:right">1000 mm</div></div>
+            <p class="help">Applied only in stages 3–5.</p>
+          </div>
+        </details>
+        <details class="group">
+          <summary>Concept supports &amp; jacks</summary>
+          <div class="group-body">
+            <label class="field"><span>Temporary arrangement</span>
+              <select id="concept" data-field="concept">
+                <option value="portal">Portal frames</option><option value="v">V-frame concept</option><option value="cross">Cross braces</option><option value="grid">Independent posts</option>
+              </select>
+            </label>
+            <label class="field"><span>Brace section width</span><div class="unit-wrap"><input id="braceSize" data-field="braceSize" type="number" min="20" step="5"><em>mm</em></div></label>
+            <label class="check-row"><input id="showBraces" data-field="showBraces" type="checkbox"> Show temporary members</label>
+            <label class="check-row"><input id="showJacks" data-field="showJacks" type="checkbox"> Show candidate jack markers</label>
+            <div class="field-pair" style="margin-top:12px">
+              <label class="field"><span>Marker A (x)</span><div class="unit-wrap"><input id="jackA" data-field="jackA" type="number" min="0" step=".1"><em>m</em></div></label>
+              <label class="field"><span>Marker B (x)</span><div class="unit-wrap"><input id="jackB" data-field="jackB" type="number" min="0" step=".1"><em>m</em></div></label>
+            </div>
+            <label class="field"><span>Nominal jack rating (each)</span><div class="unit-wrap"><input id="jackRating" data-field="jackRating" type="number" min=".1" step=".5"><em>t</em></div></label>
+            <p class="help">Positions measured from the left across the front. No reaction sharing, lateral stability or support bearing checks have been performed.</p>
+          </div>
+        </details>
+        <details class="group" open>
+          <summary>Track post replacement</summary>
+          <div class="group-body">
+            <p id="postStageSummary" class="help" style="margin-top:0">0 posts marked replaced</p>
+            <label class="field"><span>Post</span>
+              <select id="selectedPost">
+                <option value="0">Front 1</option><option value="1">Front 2</option><option value="2">Front 3</option><option value="3">Front 4</option>
+                <option value="4">Rear 1</option><option value="5">Rear 2</option><option value="6">Rear 3</option><option value="7">Rear 4</option>
+              </select>
+            </label>
+            <button class="ghost wide" type="button" id="replacePost">Toggle replacement state</button>
+          </div>
+        </details>
+      </div>
+      <div data-panel="results" class="hidden">
+        <div class="section-label">Example beam analysis</div>
+        <div class="warning-note">These calculations assume one isolated, simply supported beam with uniform load. <strong>They are not a lifting design or complete structural analysis.</strong></div>
+        <div class="metrics-grid" style="margin-bottom:12px">
+          <div class="metric highlight"><strong id="metricShear">—</strong><span>Max shear · kN</span></div>
+          <div class="metric highlight"><strong id="metricMoment">—</strong><span>Max moment · kNm</span></div>
+          <div class="metric"><strong id="metricStress">—</strong><span>Elastic bending stress · MPa</span></div>
+          <div class="metric"><strong id="metricDeflection">—</strong><span>Midspan deflection · mm</span></div>
+        </div>
+        <div class="diagram-card"><strong>Shear-force diagram</strong><svg viewBox="0 0 300 114" id="shearDiagram" role="img" aria-label="Illustrative shear force along one span"></svg></div>
+        <div class="diagram-card"><strong>Bending-moment diagram</strong><svg viewBox="0 0 300 114" id="momentDiagram" role="img" aria-label="Illustrative moment along one span"></svg></div>
+        <div class="slim-note">Span <strong id="analysisSpan">3.00 m</strong> · Roof load <strong id="analysisArea">0.50 kPa</strong> · Tributary depth <strong id="analysisTrib">2.50 m</strong></div>
+        <div style="margin:12px 0"><label class="check-row"><input id="showStress2" type="checkbox" disabled> Bending colours available in Model → Appearance</label></div>
+        <p class="diagram-note">V(x) = q(L/2−x). M(x) = qx(L−x)/2. Elastic deflection = 5qL⁴/(384EI). The open C-section uses a rectangular web-and-flange approximation, ignoring torsion and local effects.</p>
+        <div class="notice" style="margin-top:14px">Not included: actual load combinations, lateral-torsional buckling, moment continuity, bolts, centre splice capacity, foundations, jack reactions, temporary works, structural redistribution or code compliance.</div>
+        <button class="ghost wide" id="exportSidebar" style="margin-top:14px">Export assumptions &amp; geometry</button>
+      </div>
+    </div>
+  </aside>
+  <main class="center">
+    <div class="canvas-head">
+      <div class="view-title"><span class="view-dot"></span> 3D workspace</div>
+      <div class="view-controls" aria-label="Camera direction">
+        <button data-view="iso" class="selected">3D</button><button data-view="front">Front</button><button data-view="side">Side</button><button data-view="top">Plan</button>
+      </div>
+      <button id="fitButton" type="button" class="ghost" style="padding:7px 9px;font-size:11px">Fit</button>
+    </div>
+    <div class="canvas-wrap">
+      <div id="sceneHost" aria-label="Orbitable 3D model of shed"></div>
+      <div class="canvas-badge"><span id="dimensionChip" class="chip">9.00 m × 5.00 m</span><span id="heightChip" class="chip">Eaves 2.00 – 2.45 m</span><span id="stageChip" class="chip dark">Existing structure</span></div>
+      <div class="scene-hint">Drag to orbit · Scroll/pinch to zoom · Tap to inspect</div>
+      <div class="axis-label" aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="2.7" fill="#31566f"/><path d="M24 24 L41 29" stroke="#d66b64" stroke-width="2.5"/><path d="M24 24 L24 6" stroke="#40a981" stroke-width="2.5"/><path d="M24 24 L9 35" stroke="#4d90ce" stroke-width="2.5"/><text x="40" y="24" fill="#c8615c" font-size="10">X</text><text x="26" y="9" fill="#329876" font-size="10">Y</text><text x="4" y="44" fill="#397fbf" font-size="10">Z</text></svg></div>
+      <div id="loading" class="loading"><div class="loading-card"><div class="spinner"></div><strong>Preparing 3D workspace</strong><div id="loadingText" style="margin-top:5px">Loading the model renderer…</div></div></div>
+    </div>
+    <div class="canvas-footer">
+      <div class="legend"><span><i class="existing"></i>Posts</span><span><i class="beam"></i>Roof steel</span><span><i class="temp"></i>Temporary</span><span><i class="new"></i>Replaced</span></div>
+      <span id="viewStatus" class="footer-summary">Solid geometry · click a member</span>
+      <button class="footer-action" type="button" onclick="document.getElementById('inspectorToggle').click()">Member details ↗</button>
+    </div>
+  </main>
+  <aside class="right-panel" id="rightPanel" aria-label="Model inspector">
+    <div class="mobile-strip"><strong style="font-size:12px">Member inspector</strong><button id="closeInspector" class="ghost">Close</button></div>
+    <div class="inspector-header"><h2>Model overview</h2><p>Geometry and load results are preliminary.</p></div>
+    <div class="inspector-content">
+      <div class="metrics-grid">
+        <div class="metric highlight"><strong id="metricLoad">—</strong><span>Line load · kN/m</span></div>
+        <div class="metric"><strong id="metricReaction">—</strong><span>End reaction · kN</span></div>
+      </div>
+      <p class="help" style="margin:9px 1px 16px">Isolated beam only; these are not jack reactions.</p>
+      <div class="inspector-card">
+        <h3>Structure</h3>
+        <dl class="kv"><dt>Roof system</dt><dd>Skillion</dd></dl>
+        <dl class="kv"><dt>Support posts</dt><dd>8</dd></dl>
+        <dl class="kv"><dt>Replaced</dt><dd id="replacedCount">0 of 8</dd></dl>
+        <dl class="kv"><dt>Analysis level</dt><dd>Beam example</dd></dl>
+      </div>
+      <div class="underlined"><div class="section-label">Selected member</div><h2 id="selectionTitle" style="font-size:14px;margin-bottom:4px">Nothing selected</h2><p id="selectionHint" class="help">Tap a member to inspect it</p></div>
+      <div id="properties"></div>
+      <div class="notice"><strong id="sourceStatus">Initialising viewer</strong><br>Measurements and loads are user-editable assumptions. No engineering certification or lifting-point assessment has been performed.</div>
+    </div>
+  </aside>
+</div>
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+</div>
+<script type="module" src="./app.js?v=3"></script>
+</body>
+</html>
